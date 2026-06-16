@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Xcode — user-specific state & build output
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.moved-aside
+*.hmap
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Secrets — never commit API keys
+Secrets.xcconfig
+*.secret.xcconfig
+.env
+.claude/settings.local.json
