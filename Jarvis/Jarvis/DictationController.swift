@@ -1,5 +1,6 @@
 import Foundation
 import AVFoundation
+import AppKit
 import Combine
 
 /// View model for the main window. Toggles recording, transcribes the result
@@ -78,6 +79,23 @@ final class DictationController: ObservableObject {
             }
             try? FileManager.default.removeItem(at: fileURL)
         }
+    }
+
+    /// Copy the revised text to the clipboard, ready to paste elsewhere.
+    func copyRevisedToClipboard() {
+        let text = revisedText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
+        statusText = "Copied — ready to paste"
+    }
+
+    /// Empty both boxes to start fresh.
+    func clear() {
+        transcribedText = ""
+        revisedText = ""
+        statusText = "Ready"
     }
 
     /// Polish the (possibly hand-edited) transcript into the right-hand box.

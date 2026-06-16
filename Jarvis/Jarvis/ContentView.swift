@@ -41,11 +41,44 @@ struct ContentView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
 
-            HStack(spacing: 12) {
-                editor(title: "Transcript", text: $controller.transcribedText)
-                editor(title: "Revised", text: $controller.revisedText)
+            HStack(alignment: .top, spacing: 12) {
+                // Left column: transcript box with the Record button beneath it.
+                VStack(alignment: .leading, spacing: 6) {
+                    editor(title: "Transcript", text: $controller.transcribedText)
+                    HStack {
+                        Button(controller.isRecording ? "Stop" : "Record") {
+                            controller.toggleRecording()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(controller.isRecording ? .red : .accentColor)
+                        .keyboardShortcut("r", modifiers: .command)
+                        Spacer()
+                    }
+                }
+
+                // Right column: revised box with the Revise button beneath it.
+                VStack(alignment: .leading, spacing: 6) {
+                    editor(title: "Revised", text: $controller.revisedText)
+                    HStack {
+                        Button {
+                            controller.revise()
+                        } label: {
+                            if controller.isRevising {
+                                ProgressView().controlSize(.small)
+                            } else {
+                                Text("Revise")
+                            }
+                        }
+                        .disabled(!canRevise)
+                        .keyboardShortcut("e", modifiers: .command)
+                        Spacer()
+                    }
+                }
             }
 
+            Divider()
+
+            // Panel footer: status on the left, clipboard + clear on the right.
             HStack(spacing: 12) {
                 Text(controller.statusText)
                     .font(.callout)
@@ -53,24 +86,18 @@ struct ContentView: View {
 
                 Spacer()
 
-                Button(controller.isRecording ? "Stop" : "Record") {
-                    controller.toggleRecording()
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(controller.isRecording ? .red : .accentColor)
-                .keyboardShortcut("r", modifiers: .command)
-
                 Button {
-                    controller.revise()
+                    controller.copyRevisedToClipboard()
                 } label: {
-                    if controller.isRevising {
-                        ProgressView().controlSize(.small)
-                    } else {
-                        Text("Revise")
-                    }
+                    Label("Copy", systemImage: "doc.on.clipboard")
                 }
-                .disabled(!canRevise)
-                .keyboardShortcut("e", modifiers: .command)
+                .disabled(controller.revisedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .keyboardShortcut("c", modifiers: [.command, .shift])
+
+                Button("Clear", role: .destructive) {
+                    controller.clear()
+                }
+                .disabled(controller.transcribedText.isEmpty && controller.revisedText.isEmpty)
             }
         }
         .padding()
